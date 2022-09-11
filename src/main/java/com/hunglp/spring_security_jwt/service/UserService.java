@@ -7,15 +7,17 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 
-
 public interface UserService {
 
     User saveUser(User user);
-    Role saveRole(Role role);
-    List<User> getListUser();
-    User getByUsername(String name);
-    void addRoleToUser(String username, String roleName);
 
+    Role saveRole(Role role);
+
+    List<User> getListUser();
+
+    User getByUsername(String name);
+
+    void addRoleToUser(String username, String roleName);
 
 
 }
