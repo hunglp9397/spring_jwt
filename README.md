@@ -23,3 +23,5 @@ Còn ví dụ Facebook thì sẽ ko thể bắt ng dùng login lại được. P
 
 
 ![image](https://user-images.githubusercontent.com/101548961/189614162-a7f769b9-ce26-4c0f-a2c1-a372946b75d5.png)
+
+![image](https://user-images.githubusercontent.com/101548961/189614323-946bd821-12bb-4311-8497-1e7384752f07.png)
