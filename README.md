@@ -22,3 +22,4 @@ Việc tạo ra refresh token để kéo dài thời gian hiệu lực của acc
 Còn ví dụ Facebook thì sẽ ko thể bắt ng dùng login lại được. PHải làm thế nào cho ứng dụng chạy mượt
 
 
+![image](https://user-images.githubusercontent.com/101548961/189614162-a7f769b9-ce26-4c0f-a2c1-a372946b75d5.png)
