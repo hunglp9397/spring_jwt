@@ -5,18 +5,20 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hunglp.spring_security_jwt.domain.CustomUser;
 import com.hunglp.spring_security_jwt.domain.User;
+import com.hunglp.spring_security_jwt.dto.UserDTO;
 import com.hunglp.spring_security_jwt.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +36,41 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @PostMapping("/login")
+    public void login(HttpServletRequest request, HttpServletResponse response, @RequestBody UserDTO userDTO) throws IOException {
+
+        passwordEncoder.encode(userDTO.getPassword());
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword());
+        Authentication auth = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        CustomUser customUser = (CustomUser) auth.getPrincipal();
+        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
+        String accessToken = JWT.create()
+                .withSubject(customUser.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
+                .withIssuer(request.getRequestURL().toString())
+                .sign(algorithm);
+
+        String refreshToken = JWT.create()
+                .withSubject(customUser.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
+                .withIssuer(request.getRequestURL().toString())
+                .sign(algorithm);
+
+//        response.setHeader("access_token", accessToken);
+//        response.setHeader("refresh_token", refreshToken);
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
+        response.setContentType("application/json");
+        new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+    }
 
     @PostMapping("/refresh-token")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {

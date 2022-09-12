@@ -1,5 +1,6 @@
 package com.hunglp.spring_security_jwt.service;
 
+import com.hunglp.spring_security_jwt.domain.CustomUser;
 import com.hunglp.spring_security_jwt.domain.Role;
 import com.hunglp.spring_security_jwt.domain.User;
 import com.hunglp.spring_security_jwt.repository.RoleRepository;
@@ -72,7 +73,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 //        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
 //        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
 
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), new ArrayList<>());
+        return new CustomUser(user);
 
 
     }
