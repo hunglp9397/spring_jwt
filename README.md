@@ -21,7 +21,3 @@ Việc tạo ra refresh token để kéo dài thời gian hiệu lực của acc
 - Đa số access token thì hiệu lực là 2 tiếng. Trừ khi là các hệ thống ngân hàng thì mới cho người dùng login lại
 Còn ví dụ Facebook thì sẽ ko thể bắt ng dùng login lại được. PHải làm thế nào cho ứng dụng chạy mượt
 
-
-![image](https://user-images.githubusercontent.com/101548961/189614162-a7f769b9-ce26-4c0f-a2c1-a372946b75d5.png)
-
-![image](https://user-images.githubusercontent.com/101548961/189614323-946bd821-12bb-4311-8497-1e7384752f07.png)
