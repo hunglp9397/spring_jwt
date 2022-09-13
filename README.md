@@ -11,7 +11,7 @@
 
 * API Refresh token:
 
-![image](https://user-images.githubusercontent.com/101548961/189928606-951255da-d28f-4b6c-b99e-e19fd9bdb31a.png)
+![image](https://user-images.githubusercontent.com/101548961/189928826-0f4c6c14-ee64-477e-8048-b54dd8ed5b76.png)
 
 2 **Dùng refresh token thay cho acccess token có được ko ?**
 - Không được, vì hiệu lực của access token thường ít hơn sơ với refresh token.
