@@ -5,12 +5,14 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hunglp.spring_security_jwt.constant.CommonVar;
 import com.hunglp.spring_security_jwt.domain.CustomUser;
 import com.hunglp.spring_security_jwt.domain.User;
 import com.hunglp.spring_security_jwt.dto.UserDTO;
 import com.hunglp.spring_security_jwt.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,6 +45,9 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private RedisTemplate<Object,Object> redisTemplate;
 
     @PostMapping("/login")
     public void login(HttpServletRequest request, HttpServletResponse response, @RequestBody UserDTO userDTO) throws IOException {
@@ -62,9 +68,6 @@ public class AuthController {
                 .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algorithm);
-
-//        response.setHeader("access_token", accessToken);
-//        response.setHeader("refresh_token", refreshToken);
         Map<String, String> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
         tokens.put("refreshToken", refreshToken);
@@ -93,6 +96,9 @@ public class AuthController {
                         .withClaim("roles", new ArrayList<>())
                         .sign(algorithm);
 
+                // Renew effective cache
+                this.redisTemplate.expire(username, CommonVar.effectiveAccessToken, TimeUnit.MILLISECONDS);
+
                 // Response
                 Map<String, String> tokens = new HashMap<>();
                 tokens.put("accessToken", accessToken);
@@ -115,6 +121,14 @@ public class AuthController {
             throw new RuntimeException("Refresh token is missing");
         }
     }
+
+    @PostMapping("/logout")
+    public void logout(@RequestBody UserDTO userDTO){
+        if(this.redisTemplate.opsForHash().get(userDTO.getUsername(), "user") != null){
+            this.redisTemplate.opsForHash().delete(userDTO.getUsername(), "user");
+        }
+    }
+
 }
 
 
