@@ -1,5 +1,6 @@
 package com.hunglp.spring_security_jwt.service;
 
+import com.hunglp.spring_security_jwt.constant.CommonVar;
 import com.hunglp.spring_security_jwt.domain.CustomUser;
 import com.hunglp.spring_security_jwt.domain.Role;
 import com.hunglp.spring_security_jwt.domain.User;
@@ -7,6 +8,8 @@ import com.hunglp.spring_security_jwt.repository.RoleRepository;
 import com.hunglp.spring_security_jwt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,6 +22,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -32,6 +36,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final RoleRepository roleRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RedisTemplate<Object,Object> redisTemplate;
 
     @Override
     public User saveUser(User user) {
@@ -65,13 +72,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not exists in DB");
+        User user = null;
+        if(this.redisTemplate.opsForHash().get(username, "user") != null){
+            user = (User)this.redisTemplate.opsForHash().get(username, "user");
+        }else{
+            user = userRepository.findByUsername(username);
+            if (user == null) {
+                throw new UsernameNotFoundException("User not exists in DB");
+            }
+            this.redisTemplate.opsForHash().put(username, "user", user);
+            this.redisTemplate.expire(username, CommonVar.effectiveAccessToken, TimeUnit.MILLISECONDS);
         }
-
-//        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-//        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
 
         return new CustomUser(user);
 
